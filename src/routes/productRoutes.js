@@ -18,7 +18,7 @@ const { createProductSchema } = require('../schemas/productSchema');
  *   get:
  *     summary: Obtener y filtrar lista de productos
  *     tags: [Products]
- * security: []   # <--- Esto indica explícitamente que es una ruta pública
+ *     security: []   # <--- Esto indica explícitamente que es una ruta pública
  *     parameters:
  *       - in: query
  *         name: categoryId
@@ -112,5 +112,32 @@ router.post(
   validateSchema(createProductSchema),
   productController.createProduct
 );
+
+/**
+ * @swagger
+ * /api/products/{id}:
+ *   delete:
+ *     summary: Eliminar un producto por ID
+ *     tags: [Products]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID del producto a eliminar
+ *     responses:
+ *       200:
+ *         description: Producto eliminado exitosamente
+ *       401:
+ *         description: No autorizado (Token faltante o inválido)
+ *       404:
+ *         description: Producto no encontrado
+ *       500:
+ *         description: Error interno del servidor
+ */
+router.delete('/:id', authenticateToken, productController.deleteProduct);
 
 module.exports = router;
