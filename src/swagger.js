@@ -36,11 +36,7 @@ const options = {
     ],
   },
   // Usar path.join con __dirname para que funcione siempre en producción
-  apis: [
-    path.join(__dirname, '../routes/*.js'), // Si swagger.js está dentro de src/config o similar
-    path.join(__dirname, './routes/*.js'),   // Si swagger.js está directamente en src/
-    path.join(__dirname, './*.js')
-  ],
+ apis: [path.join(__dirname, 'routes/*.js')],
 };
 
 const swaggerSpec = swaggerJSDoc(options);
