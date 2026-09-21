@@ -1,14 +1,15 @@
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
-// Obtener todos los productos
-// Obtener productos con filtros y paginación
+// Obtener todos los productos (solo los que están activos)
 const getProducts = async (req, res, next) => {
   try {
     const { categoryId, search } = req.query;
 
-    // Construir filtro dinámico
-    const where = {};
+    // Construir filtro dinámico asegurando solo productos activos
+    const where = {
+      isActive: true,
+    };
 
     if (categoryId) {
       where.categoryId = parseInt(categoryId);
@@ -35,7 +36,6 @@ const getProducts = async (req, res, next) => {
   }
 };
 
-
 // Obtener un producto por ID
 const getProductById = async (req, res) => {
   const { id } = req.params;
@@ -48,7 +48,7 @@ const getProductById = async (req, res) => {
       },
     });
 
-    if (!product) {
+    if (!product || !product.isActive) {
       return res.status(404).json({ error: 'Producto no encontrado' });
     }
 
@@ -85,6 +85,7 @@ const createProduct = async (req, res) => {
     res.status(500).json({ error: 'Error al crear el producto', details: error.message });
   }
 };
+
 // Actualizar un producto
 const updateProduct = async (req, res) => {
   const { id } = req.params;
@@ -107,32 +108,26 @@ const updateProduct = async (req, res) => {
   }
 };
 
-// Eliminar un producto
+// Eliminar un producto (Borrado lógico con isActive: false)
 const deleteProduct = async (req, res) => {
   const { id } = req.params;
 
   try {
     const productId = parseInt(id);
 
-    // Intenta eliminar el producto directamente
-    await prisma.product.delete({
+    // Actualiza el campo isActive a false en lugar de eliminar el registro de la BD
+    await prisma.product.update({
       where: { id: productId },
+      data: { isActive: false },
     });
 
-    return res.status(200).json({ message: 'Producto eliminado exitosamente' });
+    return res.status(200).json({ message: 'Producto desactivado/eliminado exitosamente' });
   } catch (error) {
-    console.error('Error interno al eliminar el producto:', error);
+    console.error('Error al desactivar el producto:', error);
 
-    // Registro no encontrado en la base de datos
+    // Si el registro no existe en la base de datos
     if (error.code === 'P2025') {
-      return res.status(404).json({ error: 'El producto no existe o ya fue eliminado' });
-    }
-
-    // Violación de clave foránea (el producto está vinculado a otras tablas)
-    if (error.code === 'P2003') {
-      return res.status(400).json({ 
-        error: 'No se puede eliminar el producto porque tiene relaciones asociadas en otras tablas.' 
-      });
+      return res.status(404).json({ error: 'El producto no existe' });
     }
 
     return res.status(500).json({ error: 'Error al eliminar el producto', details: error.message });

@@ -30,6 +30,7 @@ model Product {
   description String
   price       Float
   imageUrl    String?
+  isActive    Boolean  @default(true) // <--- Campo para borrado lógico
   createdAt   DateTime @default(now())
   
   userId      Int
