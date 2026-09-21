@@ -1,3 +1,4 @@
+const path = require('path'); // <-- Requerir el módulo 'path'
 const swaggerJSDoc = require('swagger-jsdoc');
 const swaggerUi = require('swagger-ui-express');
 
@@ -10,6 +11,10 @@ const options = {
       description: 'Documentación de la API RESTful para el Marketplace con autenticación JWT, subida de archivos y gestión de productos.',
     },
     servers: [
+      {
+        url: 'https://marketplace-backend-2kcd.onrender.com',
+        description: 'Servidor de Producción (Render)',
+      },
       {
         url: 'http://localhost:3000',
         description: 'Servidor Local de Desarrollo',
@@ -30,7 +35,12 @@ const options = {
       },
     ],
   },
-  apis: ['./src/routes/*.js'], // Lee los comentarios JSDoc dentro de las rutas
+  // Usar path.join con __dirname para que funcione siempre en producción
+  apis: [
+    path.join(__dirname, '../routes/*.js'), // Si swagger.js está dentro de src/config o similar
+    path.join(__dirname, './routes/*.js'),   // Si swagger.js está directamente en src/
+    path.join(__dirname, './*.js')
+  ],
 };
 
 const swaggerSpec = swaggerJSDoc(options);
