@@ -114,26 +114,24 @@ const deleteProduct = async (req, res) => {
   try {
     const productId = parseInt(id);
 
-    // Opcional: Si el producto está asociado a ventas/ítems, elimina o desvincula esos registros primero
-    // await prisma.orderItem.deleteMany({ where: { productId } });
-
+    // Intenta eliminar el producto directamente
     await prisma.product.delete({
       where: { id: productId },
     });
 
     return res.status(200).json({ message: 'Producto eliminado exitosamente' });
   } catch (error) {
-    console.error('Error al eliminar en backend:', error);
+    console.error('Error interno al eliminar el producto:', error);
 
-    // Si el registro no existe
+    // Registro no encontrado en la base de datos
     if (error.code === 'P2025') {
       return res.status(404).json({ error: 'El producto no existe o ya fue eliminado' });
     }
 
-    // Si tiene restricciones de clave foránea (Foreign Key constraint failed - P2003)
+    // Violación de clave foránea (el producto está vinculado a otras tablas)
     if (error.code === 'P2003') {
       return res.status(400).json({ 
-        error: 'No se puede eliminar el producto porque está asociado a otros registros (órdenes, carritos, etc.).' 
+        error: 'No se puede eliminar el producto porque tiene relaciones asociadas en otras tablas.' 
       });
     }
 
