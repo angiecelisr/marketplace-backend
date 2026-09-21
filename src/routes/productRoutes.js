@@ -18,6 +18,7 @@ const { createProductSchema } = require('../schemas/productSchema');
  *   get:
  *     summary: Obtener y filtrar lista de productos
  *     tags: [Products]
+ * security: []   # <--- Esto indica explícitamente que es una ruta pública
  *     parameters:
  *       - in: query
  *         name: categoryId
