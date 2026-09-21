@@ -1,12 +1,13 @@
 const express = require('express');
 const cors = require('cors');
+const fs = require('fs');
+const path = require('path');
 require('dotenv').config();
 
 const setupSwagger = require('./swagger');
 const authRoutes = require('./routes/authRoutes');
 const productRoutes = require('./routes/productRoutes');
 const orderRoutes = require('./routes/orderRoutes');
-const path = require('path');
 const uploadRoutes = require('./routes/uploadRoutes');
 const errorHandler = require('./middlewares/errorMiddleware');
 
@@ -17,7 +18,14 @@ app.use(express.json());
 
 setupSwagger(app);
 
-app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+// 1. Asegurar que la carpeta uploads exista físicamente en el servidor
+const uploadsPath = path.join(__dirname, '../uploads');
+if (!fs.existsSync(uploadsPath)) {
+  fs.mkdirSync(uploadsPath, { recursive: true });
+}
+
+// 2. Servir los archivos estáticos desde la carpeta uploads
+app.use('/uploads', express.static(uploadsPath));
 
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
